@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <tuple>
 #include <initializer_list>
 #include <boost/type_index.hpp>
 
@@ -43,20 +44,57 @@ template<typename T, typename ...Ts>
 struct Tuple<T, Ts...>
 {
     T first_element;
-    Tuple<Ts...> remaining_elemnts;
+    Tuple<Ts...> remaining_elements;
     Tuple(const T& single_element, const Ts& ...elements)
-    : first_element(single_element), remaining_elemnts(elements...)
+    : first_element(single_element), remaining_elements(elements...)
     {
-        cout<<"Tuple Constructor first element = "<< boost::typeindex::type_id<T>().pretty_name()<< "\n";
+        cout<<"Tuple Constructor first element type = "<< boost::typeindex::type_id<T>().pretty_name()<< "\n";
         //cout<<"Tuple Constructor with DeclType = "<< boost::typeindex::type_id<decltype(single_element)>().pretty_name()<< "\n";
         //cout<<"Tuple Constructor with type_id_with_cvr = "<< boost::typeindex::type_id_with_cvr<decltype(single_element)>().pretty_name()<< "\n";
         cout<< __PRETTY_FUNCTION__ <<endl;
+        cout<< "value single element: "<< single_element <<endl;
+        size_t sizeof_remaining_elements = sizeof...(Ts);
+        cout<< "size of remaining elements: "<< sizeof_remaining_elements<< endl;
     }
 };
 
 
-#endif //ENABLE_TUPLE_EXAMPLE
+template<typename T, typename... Rest>
+struct GetHelper<0, Tuple<T, Rest...>>
+{ // Specialization for index 0
+    static T get(const Tuple<T, Rest...> &data)
+    {
+        return data.first_element;
+    }
+};
 
+
+template<size_t idx, typename T, typename... Rest>
+struct GetHelper<idx, Tuple<T, Rest...>>
+{ // GetHelper Implementation
+    static auto get(const Tuple<T, Rest...> &data)
+    {
+        return GetHelper<idx - 1, Tuple<Rest...>>::get(data.remaining_elements);
+    }
+};
+
+
+template<size_t idx, template <typename...> class Tuple, typename... Args>
+auto get(const Tuple<Args...> &tuple_data)
+{
+    return GetHelper<idx, Tuple<Args...>>::get(tuple_data);
+}
+
+template<size_t Idx, typename... Args, typename Func>
+auto tuple_at(const Tuple<Args...>& tp, const Func& func)
+{
+    const auto& v = ::get<Idx>(tp);
+    func(v);
+}
+
+#endif //ENABLE_TUPLE_EXAMPLE
+/*TODO: use the get function to implement tuple_at function-> which basically takes polymorphic lambda and Tuple
+ * data structure. Check if we can implement tuple_size_v */
 int main()
 {
     #if ENABLE_BASIC_FORWARDING_EXAMPLE
@@ -66,6 +104,9 @@ int main()
     #if ENABLE_TUPLE_EXAMPLE
     Tuple<bool> t1(false);
     Tuple<int, char, float> t2(1, 'a', 1.5);
+    auto tuple_value_at = [](const auto& v){ cout<< "tuple value = " << v << endl; };
+    tuple_at<1>(t2, tuple_value_at);
+    cout<< "value in tuple using getter: " << get<0>(t2);
     #endif
     return 0;
 }
