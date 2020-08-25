@@ -89,7 +89,18 @@ template<size_t Idx, typename... Args, typename Func>
 auto tuple_at(const Tuple<Args...>& tp, const Func& func)
 {
     const auto& v = ::get<Idx>(tp);
-    func(v);
+    func(v, Idx);
+}
+
+template<size_t Idx = 0, typename... Args , typename Func>
+auto tuple_for(const Tuple<Args...>& tp, const Func& func)
+{
+    constexpr auto tuple_size = sizeof...(Args);
+    if constexpr(Idx < tuple_size)
+    {
+        tuple_at<Idx>(tp, func);
+        tuple_for<Idx + 1>(tp, func);
+    }
 }
 
 #endif //ENABLE_TUPLE_EXAMPLE
@@ -104,9 +115,10 @@ int main()
     #if ENABLE_TUPLE_EXAMPLE
     Tuple<bool> t1(false);
     Tuple<int, char, float> t2(1, 'a', 1.5);
-    auto tuple_value_at = [](const auto& v){ cout<< "tuple value = " << v << endl; };
-    tuple_at<1>(t2, tuple_value_at);
-    cout<< "value in tuple using getter: " << get<0>(t2);
+    auto tuple_value_at = [=](const auto& v, int Idx){ cout<< "tuple value @ Index" << Idx << " = " << v << endl; };
+    tuple_for(t2, tuple_value_at);
+/*    tuple_at<1>(t2, tuple_value_at);
+    cout<< "value in tuple using getter: " << get<0>(t2);*/
     #endif
     return 0;
 }
