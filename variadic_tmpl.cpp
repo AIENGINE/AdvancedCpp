@@ -48,13 +48,13 @@ struct Tuple<T, Ts...>
     Tuple(const T& single_element, const Ts& ...elements)
     : first_element(single_element), remaining_elements(elements...)
     {
-        cout<<"Tuple Constructor first element type = "<< boost::typeindex::type_id<T>().pretty_name()<< "\n";
+        cout<<"From Tuple Constructor->first element type = "<< boost::typeindex::type_id<T>().pretty_name()<< "\n";
         //cout<<"Tuple Constructor with DeclType = "<< boost::typeindex::type_id<decltype(single_element)>().pretty_name()<< "\n";
         //cout<<"Tuple Constructor with type_id_with_cvr = "<< boost::typeindex::type_id_with_cvr<decltype(single_element)>().pretty_name()<< "\n";
         cout<< __PRETTY_FUNCTION__ <<endl;
-        cout<< "value single element: "<< single_element <<endl;
+        cout<< "From Tuple Constructor->value single element: "<< single_element <<endl;
         size_t sizeof_remaining_elements = sizeof...(Ts);
-        cout<< "size of remaining elements: "<< sizeof_remaining_elements<< endl;
+        cout<< "From Tuple Constructor->size of remaining elements: "<< sizeof_remaining_elements<< endl;
     }
 };
 
@@ -103,9 +103,24 @@ auto tuple_for(const Tuple<Args...>& tp, const Func& func)
     }
 }
 
+template<size_t Idx = 0, typename ...Args, typename Func>
+auto tuple_any_of(const Tuple<Args...>& tp, const Func& func)
+{
+    constexpr auto tuple_size = sizeof...(Args);
+    if constexpr (Idx < tuple_size)
+    {
+        bool result = func(::get<Idx>(tp));
+        return result ? true: tuple_any_of<Idx + 1>(tp, func);
+    }
+    else
+    {
+        return false;
+    }
+
+}
+
 #endif //ENABLE_TUPLE_EXAMPLE
-/*TODO: use the get function to implement tuple_at function-> which basically takes polymorphic lambda and Tuple
- * data structure. Check if we can implement tuple_size_v */
+/*TODO: Check if we can implement custom tuple_size_v  */
 int main()
 {
     #if ENABLE_BASIC_FORWARDING_EXAMPLE
@@ -117,7 +132,11 @@ int main()
     Tuple<int, char, float> t2(1, 'a', 1.5);
     auto tuple_value_at = [=](const auto& v, int Idx){ cout<< "tuple value @ Index" << Idx << " = " << v << endl; };
     tuple_for(t2, tuple_value_at);
-/*    tuple_at<1>(t2, tuple_value_at);
+
+    auto has_f1_5 = tuple_any_of(t2, [](auto v){ return v == 1.5f; });
+    has_f1_5 ? cout<< "value is found"<<endl : cout<< "tuple any_of can't find a value.."<<endl;
+
+    /*    tuple_at<1>(t2, tuple_value_at);
     cout<< "value in tuple using getter: " << get<0>(t2);*/
     #endif
     return 0;
