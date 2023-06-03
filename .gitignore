@@ -31,4 +31,7 @@
 *.out
 *.app
 *.idea
-cmake-build-debug
+cmake-build-debug/
+cmake-build-debug-system/
+build/
+.vscode/
