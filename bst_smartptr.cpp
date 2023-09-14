@@ -14,11 +14,11 @@ struct TreeNode
 };
 
 /*
-TODO
+Assumptions/Node insertion logic
 0. Reject any duplicate key
 1. Bst can be created empty
 2. Insert: if the tree is empty then create the TreeNode with left and right nodes empty
-3. if there is already a node present compare the key with the already present node object's key in the BSTree
+3. if there is already a node present, than compare the key with the already present node object's key in the BSTree
 meaning current object underconsideration (object pointed to by the this pointer). The idea here is to find out
 nullptr either on the left or right childs of already present nodes based on the key comparison. The key comaprison
 is essentially fulfiling the BST property and placing/creating the nodes at the right places.
@@ -153,6 +153,7 @@ std::unique_ptr<TreeNode> BSTree::find_min(std::unique_ptr<TreeNode>& node)
 }
 // TODO: Current implementation does not handle slightly or completely skewed BSTree cases, 
 // requires successor and predecessor with parent tracking
+// leaks memory in the current state
 void BSTree::delete_node(std::unique_ptr<TreeNode>& node, uint64_t key)
 {
     if (node == nullptr)
@@ -252,9 +253,9 @@ int main()
     t_bstree.insert_key(11);
     t_bstree.insert_key(13);
     t_bstree.print_nodes();
-    t_bstree.inorder_traversal();
-    t_bstree.delete_key(10);
-    t_bstree.print_nodes();
+    // t_bstree.inorder_traversal();
+    // t_bstree.delete_key(10);
+    // t_bstree.print_nodes();
     
 
 
