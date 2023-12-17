@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <iostream>
 
 using namespace std::string_literals;
 
@@ -25,15 +26,26 @@ struct ImageFactory : public IImageFactory
     {
         static std::map<std::string, std::function<std::unique_ptr<Image>()>> mapping
         {
-        { "bmp", []() {return std::make_unique<BitmapImage>(); } },
-        { "png", []() {return std::make_unique<PngImage>(); } },
-        { "jpg", []() {return std::make_unique<JpgImage>(); } }
+            { "bmp", []() {return std::make_unique<BitmapImage>(); } },
+            { "png", []() {return std::make_unique<PngImage>(); } },
+            { "jpg", []() {return std::make_unique<JpgImage>(); } }
         };
 
         auto it = mapping.find(type.data());
         if (it != mapping.end())
-        return it->second();
+        {
+            std::cout<< "found "<< it->first<<std::endl;    
+            return it->second();
+        }
 
         return nullptr;
     }
+};
+
+
+int main()
+{
+    auto factory = ImageFactory{};
+    auto image = factory.Create("png");
+
 };
